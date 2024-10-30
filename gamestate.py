@@ -29,21 +29,28 @@ class GameState:
             'hp' : 100,
             'angle' : 90,
             'online_bullets' : [],
-            'local_bullets' : []
+            'local_bullets' : [],
+            'weapon': 'ak47',
         }  
 
     def kill_handle(self,killer_id ,dead_id):
-        
+        print(f'{killer_id} killed {dead_id}')
+        self.players.pop(dead_id)
+        pass
         
     def bullet_handle(self):
         for (player_id, player_data) in self.players.items():
             hitbox_x, hitbox_y = player_data['pos']
             for (start_pos, end_pos, angle, id) in self.bullets:
+                if id == player_id:
+                    continue
                 if line_rectangle_collision( (start_pos, end_pos),
                                        (hitbox_x, hitbox_y, PLAYER_HITBOX_SIZE, PLAYER_HITBOX_SIZE)
                                        ):
                     player_data['hp'] -= 20
                     print(f"{id} hit {player_id}")
+                    if player_data['hp'] <= 20:
+                        self.kill_handle(killer_id= id, dead_id= player_id)
         self.bullets.clear()
                     
                      
