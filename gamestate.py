@@ -2,18 +2,6 @@ import json
 from settings import *
 from ultis import *
 
-
-## data
-# data = {
-#     'playerid' : {
-#         'pos' : (x : int , y : int),
-#         'angle' : int,
-#         'hp' : int,
-#         ''
-        
-#     }
-# }
-
 class GameState:
     
     def __init__(self):
@@ -21,35 +9,51 @@ class GameState:
         self.bullets = []
         self.obtacles = []
         self.bullet_init_triger = []
-        self.invalid_update_keys = ['online_bullets', 'hp']
+        self.invalid_update_keys = ['online_bullets', 'hp', 'dead']
     
-    def init_player(self, player_id):
+    def init_player(self, player_id, team):
         self.players[player_id] = {
+            'team' : team,
             'pos' : (0,0),
             'hp' : 100,
             'angle' : 90,
             'online_bullets' : [],
             'local_bullets' : [],
-            'weapon': 'ak47',
+            'wp_index': 1,
+            'sp_index': 0,
+            'dead': False,
         }  
+
+    def respawn_player(self, player_id, pos):
+        self.players[player_id] = {
+            'team' : self.players[player_id]['team'],
+            'pos' : pos,
+            'hp' : 100,
+            'angle' : 90,
+            'online_bullets' : [],
+            'local_bullets' : [],
+            'wp_index': 1,
+            'sp_index': 0,
+            'dead': False,
+        }
 
     def kill_handle(self,killer_id ,dead_id):
         print(f'{killer_id} killed {dead_id}')
-        self.players.pop(dead_id)
+        self.players[dead_id]['dead'] = True
         pass
         
     def bullet_handle(self):
         for (player_id, player_data) in self.players.items():
             hitbox_x, hitbox_y = player_data['pos']
-            for (start_pos, end_pos, angle, id) in self.bullets:
+            for (start_pos, end_pos, angle, dmg, id) in self.bullets:
                 if id == player_id:
                     continue
                 if line_rectangle_collision( (start_pos, end_pos),
                                        (hitbox_x, hitbox_y, PLAYER_HITBOX_SIZE, PLAYER_HITBOX_SIZE)
                                        ):
-                    player_data['hp'] -= 20
+                    player_data['hp'] -= dmg
                     print(f"{id} hit {player_id}")
-                    if player_data['hp'] <= 20:
+                    if player_data['hp'] <= 0:
                         self.kill_handle(killer_id= id, dead_id= player_id)
         self.bullets.clear()
                     

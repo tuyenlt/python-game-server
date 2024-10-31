@@ -34,14 +34,20 @@ class Server:
                     print(f'client {player_id} had disconnected')
                     break
                 client_data = json.loads(data)
+                
                 if client_data['flag'] == 1:
                     player_id = client_data['id']
-                    self.state.init_player(player_id)
+                    self.state.init_player(player_id, client_data['team'])
                     print(f"{player_id} had connected to server")
+                    
                 elif client_data['flag'] == 2:                    
                     self.state.client_data_update(client_data)
                     sock_client.send(self.state.get_json_string().encode())
-                    self.state.clear_client_online_bullets(player_id)
+                    self.state.clear_client_online_bullets(player_id) #* to make sure not send a bullet mutiple time to same client
+                    
+                elif client_data['flag'] == 3:
+                    self.state.respawn_player(client_data['id'], client_data['pos'])
+        
                 # self.state.bullet_handle()
                 # self.state.bullets.clear()
             except Exception as e:
