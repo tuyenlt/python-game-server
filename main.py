@@ -21,6 +21,7 @@ class Server:
         self.socket.listen(self.max_client)
         self.clients = []
         self.state = GameState()
+        self.shut_down = False
     
     
     
@@ -46,7 +47,7 @@ class Server:
                     self.state.clear_client_online_bullets(player_id) #* to make sure not send a bullet mutiple time to same client
                     
                 elif client_data['flag'] == 3:
-                    self.state.respawn_player(client_data['id'], client_data['pos'])
+                    self.state.respawn_player(client_data['id'])
         
                 # self.state.bullet_handle()
                 # self.state.bullets.clear()
@@ -66,7 +67,9 @@ class Server:
                 start_new_thread(self.thread_client, (conn,))
         except KeyboardInterrupt:
             print("\nShutting down the server...")
-
+            self.shut_down = True
+        except Exception as e:
+            print(e)
         finally:
             self.socket.close()
             for client in self.clients:
